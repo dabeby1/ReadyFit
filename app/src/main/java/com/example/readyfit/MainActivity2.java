@@ -1,7 +1,7 @@
+
 package com.example.readyfit;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,6 +11,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity2 extends AppCompatActivity {
 
@@ -22,196 +28,147 @@ public class MainActivity2 extends AppCompatActivity {
     private Button btnContinue;
 
     private FirebaseAuth auth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main2);
 
+        // אתחול Firebase
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
+        // חיבור לרכיבי המסך
         editAge = findViewById(R.id.editAge);
         editWeight = findViewById(R.id.editWeight);
         editHeight = findViewById(R.id.editHeight);
         editRunTime = findViewById(R.id.editRunTime);
-
         btnContinue = findViewById(R.id.btnContinue);
 
-        // Firebase Authentication
-        auth = FirebaseAuth.getInstance();
-
-        // אם כבר יש למשתמש נתונים, מציג אותם
+        // טעינת נתונים קיימים
         loadUserData();
 
-        btnContinue.setOnClickListener(v -> {
-            saveDataAndContinue();
-        });
+        // לחיצה על כפתור המשך
+        btnContinue.setOnClickListener(v -> saveDataAndContinue());
     }
 
-
-    // ==========================================
-    // קבלת UID של המשתמש המחובר
-    // ==========================================
-
-    private String getUserId() {
+    // טעינת נתוני המשתמש מ-Firestore
+    private void loadUserData() {
 
         FirebaseUser user = auth.getCurrentUser();
 
         if (user == null) {
-            return null;
-        }
-
-        return user.getUid();
-    }
-
-
-    // ==========================================
-    // טעינת נתונים קיימים
-    // ==========================================
-
-    private void loadUserData() {
-
-        String uid = getUserId();
-
-        if (uid == null) {
+            Toast.makeText(this, "יש להתחבר מחדש", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        SharedPreferences preferences =
-                getSharedPreferences(
-                        "ReadyFitData",
-                        MODE_PRIVATE
+        db.collection("users")
+                .document(user.getUid())
+                .get()
+                .addOnSuccessListener(document -> {
+
+                    if (document.exists()) {
+
+                        Object age = document.get("age");
+                        Object weight = document.get("weight");
+                        Object height = document.get("height");
+                        Object runTime = document.get("runTime");
+
+                        if (age != null) {
+                            editAge.setText(String.valueOf(age));
+                        }
+
+                        if (weight != null) {
+                            editWeight.setText(String.valueOf(weight));
+                        }
+
+                        if (height != null) {
+                            editHeight.setText(String.valueOf(height));
+                        }
+
+                        if (runTime != null) {
+                            editRunTime.setText(String.valueOf(runTime));
+                        }
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                MainActivity2.this,
+                                "טעינת הנתונים נכשלה: " + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
                 );
-
-        String age =
-                preferences.getString(
-                        uid + "_age",
-                        ""
-                );
-
-        String weight =
-                preferences.getString(
-                        uid + "_weight",
-                        ""
-                );
-
-        String height =
-                preferences.getString(
-                        uid + "_height",
-                        ""
-                );
-
-        String runTime =
-                preferences.getString(
-                        uid + "_runTime",
-                        ""
-                );
-
-
-        editAge.setText(age);
-        editWeight.setText(weight);
-        editHeight.setText(height);
-        editRunTime.setText(runTime);
     }
 
-
-    // ==========================================
-    // שמירת הנתונים
-    // ==========================================
-
+    // שמירת נתוני המשתמש והמשך למסך הבא
     private void saveDataAndContinue() {
 
-        String uid = getUserId();
+        FirebaseUser user = auth.getCurrentUser();
 
-        if (uid == null) {
+        if (user == null) {
+            Toast.makeText(this, "יש להתחבר מחדש", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String age = editAge.getText().toString().trim();
+        String weight = editWeight.getText().toString().trim();
+        String height = editHeight.getText().toString().trim();
+        String runTime = editRunTime.getText().toString().trim();
+
+        // בדיקה שכל השדות מלאים
+        if (age.isEmpty() || weight.isEmpty() ||
+                height.isEmpty() || runTime.isEmpty()) {
 
             Toast.makeText(
-                    MainActivity2.this,
-                    "לא נמצא משתמש מחובר",
+                    this,
+                    "נא למלא את כל השדות",
                     Toast.LENGTH_SHORT
             ).show();
 
             return;
         }
 
+        // יצירת הנתונים לשמירה
+        Map<String, Object> data = new HashMap<>();
 
-        String age =
-                editAge.getText().toString().trim();
+        data.put("age", age);
+        data.put("weight", weight);
+        data.put("height", height);
+        data.put("runTime", runTime);
+        data.put("updatedAt", FieldValue.serverTimestamp());
 
-        String weight =
-                editWeight.getText().toString().trim();
+        btnContinue.setEnabled(false);
 
-        String height =
-                editHeight.getText().toString().trim();
+        // שמירה ב-Firestore
+        db.collection("users")
+                .document(user.getUid())
+                .set(data, SetOptions.merge())
+                .addOnSuccessListener(unused -> {
 
-        String runTime =
-                editRunTime.getText().toString().trim();
+                    Toast.makeText(
+                            MainActivity2.this,
+                            "הנתונים נשמרו בהצלחה",
+                            Toast.LENGTH_SHORT
+                    ).show();
 
+                    Intent intent = new Intent(
+                            MainActivity2.this,
+                            TargetUnitActivity.class
+                    );
 
-        if (age.isEmpty()
-                || weight.isEmpty()
-                || height.isEmpty()
-                || runTime.isEmpty()) {
+                    startActivity(intent);
+                    finish();
+                })
+                .addOnFailureListener(e -> {
 
-            Toast.makeText(
-                    MainActivity2.this,
-                    "יש למלא את כל הנתונים",
-                    Toast.LENGTH_SHORT
-            ).show();
+                    btnContinue.setEnabled(true);
 
-            return;
-        }
-
-
-        SharedPreferences preferences =
-                getSharedPreferences(
-                        "ReadyFitData",
-                        MODE_PRIVATE
-                );
-
-
-        SharedPreferences.Editor editor =
-                preferences.edit();
-
-
-        // שומר לפי UID של המשתמש
-        editor.putString(
-                uid + "_age",
-                age
-        );
-
-        editor.putString(
-                uid + "_weight",
-                weight
-        );
-
-        editor.putString(
-                uid + "_height",
-                height
-        );
-
-        editor.putString(
-                uid + "_runTime",
-                runTime
-        );
-
-
-        editor.apply();
-
-
-        Toast.makeText(
-                MainActivity2.this,
-                "הנתונים נשמרו",
-                Toast.LENGTH_SHORT
-        ).show();
-
-
-        // מעבר לבחירת יחידה
-        Intent intent =
-                new Intent(
-                        MainActivity2.this,
-                        TargetUnitActivity.class
-                );
-
-        startActivity(intent);
+                    Toast.makeText(
+                            MainActivity2.this,
+                            "שמירת הנתונים נכשלה: " + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
     }
 }

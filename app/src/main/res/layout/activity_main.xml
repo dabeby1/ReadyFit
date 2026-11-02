@@ -1,87 +1,131 @@
-<?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_horizontal"
-    android:padding="35dp"
-    android:background="#F8F8F4">
+    android:background="#101510"
+    android:fillViewport="true">
 
-    <!-- שם האפליקציה -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="READYFIT"
-        android:textSize="42sp"
-        android:textStyle="bold"
-        android:textColor="#556B2F"
-        android:layout_marginTop="90dp"
-        android:layout_marginBottom="10dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="מערכת אימונים חכמה לכושר קרבי"
-        android:textSize="16sp"
-        android:textColor="#666666"
-        android:layout_marginBottom="50dp"/>
-
-
-    <!-- אימייל -->
-    <EditText
-        android:id="@+id/editEmail"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:hint="שם משתמש / אימייל"
-        android:inputType="textEmailAddress"
-        android:padding="12dp"
-        android:backgroundTint="#556B2F"
-        android:layout_marginBottom="20dp"/>
-
-
-    <!-- סיסמה -->
-    <EditText
-        android:id="@+id/editPassword"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:hint="סיסמה"
-        android:inputType="textPassword"
-        android:padding="12dp"
-        android:backgroundTint="#556B2F"
-        android:layout_marginBottom="30dp"/>
-
-
-    <!-- התחברות -->
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="58dp"
-        android:text="התחברות"
-        android:textSize="18sp"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#556B2F"/>
-
-
-    <!-- אין חשבון -->
-    <TextView
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="אין לך חשבון?"
-        android:textSize="15sp"
-        android:textColor="#555555"
-        android:layout_marginTop="30dp"/>
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="24dp">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="55dp"
+            android:text="READYFIT"
+            android:textColor="#A6B879"
+            android:textSize="38sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12" />
 
-    <!-- פתיחת חלונית הרשמה -->
-    <Button
-        android:id="@+id/btnOpenRegister"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="לחץ כאן להרשמה"
-        android:textSize="15sp"
-        android:textColor="#556B2F"
-        android:backgroundTint="#F8F8F4"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="YOUR MISSION STARTS HERE"
+            android:textColor="#D0D6C5"
+            android:textSize="12sp"
+            android:letterSpacing="0.16" />
 
-</LinearLayout>
+        <View
+            android:layout_width="65dp"
+            android:layout_height="3dp"
+            android:layout_marginTop="25dp"
+            android:background="#A6B879" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="55dp"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:background="@drawable/readyfit_login_panel">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ברוך הבא"
+                android:textColor="#FFFFFF"
+                android:textSize="27sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="התחבר כדי להמשיך במסע שלך"
+                android:textColor="#B8C0B1"
+                android:textSize="14sp"
+                android:gravity="center" />
+
+            <EditText
+                android:id="@+id/editEmail"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="35dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:hint="כתובת אימייל"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#9CA596"
+                android:inputType="textEmailAddress"
+                android:background="@drawable/readyfit_input"
+                android:textDirection="ltr"
+                android:gravity="center_vertical" />
+
+            <EditText
+                android:id="@+id/editPassword"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="15dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:hint="סיסמה"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#9CA596"
+                android:inputType="textPassword"
+                android:background="@drawable/readyfit_input"
+                android:textDirection="ltr"
+                android:gravity="center_vertical" />
+
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="28dp"
+                android:text="התחברות"
+                android:textColor="#101510"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/readyfit_button"
+                android:backgroundTint="@null" />
+
+            <Button
+                android:id="@+id/btnOpenRegister"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:gravity="center"
+                android:text="אין לך חשבון? לחץ כאן להרשמה"
+                android:textColor="#B5C78A"
+                android:textSize="14sp"
+                android:padding="8dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="35dp"
+            android:text="DISCIPLINE  •  POWER  •  PROGRESS"
+            android:textColor="#687363"
+            android:textSize="10sp"
+            android:letterSpacing="0.08" />
+
+    </LinearLayout>
+</ScrollView>
