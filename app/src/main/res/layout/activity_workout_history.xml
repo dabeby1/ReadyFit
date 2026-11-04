@@ -1,0 +1,113 @@
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#10120F"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="22dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="READYFIT"
+            android:textColor="#9DBA55"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.15"
+            android:paddingBottom="25dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="היסטוריית האימונים"
+            android:textColor="#FFFFFF"
+            android:textSize="27sp"
+            android:textStyle="bold"
+            android:gravity="right" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="כאן אפשר לעקוב אחרי הביצועים והמשובים שלך"
+            android:textColor="#AEB5A5"
+            android:textSize="14sp"
+            android:gravity="right"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="25dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/home_card"
+            android:padding="22dp"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="סיכום ההתקדמות שלך"
+                android:textColor="#AEB5A5"
+                android:textSize="15sp"
+                android:gravity="right" />
+
+            <TextView
+                android:id="@+id/txtWorkoutCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="מספר אימונים שהושלמו: 0"
+                android:textColor="#A8C25E"
+                android:textSize="21sp"
+                android:textStyle="bold"
+                android:gravity="right"
+                android:layout_marginTop="10dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="טוען היסטוריה..."
+            android:textColor="#AEB5A5"
+            android:textSize="15sp"
+            android:gravity="right"
+            android:layout_marginBottom="18dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="המשובים שלך"
+            android:textColor="#FFFFFF"
+            android:textSize="21sp"
+            android:textStyle="bold"
+            android:gravity="right"
+            android:layout_marginBottom="15dp" />
+
+        <LinearLayout
+            android:id="@+id/historyContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:text="חזרה למסך הבית"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:backgroundTint="#718D3B"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp" />
+
+    </LinearLayout>
+
+</ScrollView>

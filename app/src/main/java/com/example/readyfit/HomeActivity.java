@@ -1,7 +1,10 @@
+
 package com.example.readyfit;
 
+import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -12,6 +15,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -26,22 +33,52 @@ public class HomeActivity extends AppCompatActivity {
     private TextView txtWorkoutDescription;
     private TextView txtWorkoutDuration;
 
+    private TextView txtAnalysisTitle;
+    private TextView txtAnalysisExplanation;
+
     private Button btnStartWorkout;
     private Button btnSettings;
+    private Button btnWorkoutHistory;
 
     private FirebaseAuth auth;
+    private FirebaseFirestore db;
 
+    private String currentTargetUnit = "לא נבחר";
+    private String currentRunTime = "10:00";
+    private String currentRecommendation = "שמירה על הרמה";
+
+    private boolean userDataLoaded = false;
+    private boolean analysisLoaded = false;
+    private boolean workoutGenerated = false;
+
+    private WorkoutData currentWorkout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_home);
 
         auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
+        connectViews();
 
-        // חיבור ל-XML
+        btnStartWorkout.setEnabled(false);
+
+        btnSettings.setOnClickListener(v -> {
+            startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
+        });
+
+        btnWorkoutHistory.setOnClickListener(v -> {
+            startActivity(new Intent(HomeActivity.this, WorkoutHistoryActivity.class));
+        });
+
+        btnStartWorkout.setOnClickListener(v -> startWorkout());
+
+        requestNotificationPermission();
+    }
+
+    private void connectViews() {
         imgUnit = findViewById(R.id.imgUnit);
 
         txtTargetUnit = findViewById(R.id.txtTargetUnit);
@@ -53,312 +90,201 @@ public class HomeActivity extends AppCompatActivity {
         txtWorkoutDescription = findViewById(R.id.txtWorkoutDescription);
         txtWorkoutDuration = findViewById(R.id.txtWorkoutDuration);
 
+        txtAnalysisTitle = findViewById(R.id.txtAnalysisTitle);
+        txtAnalysisExplanation = findViewById(R.id.txtAnalysisExplanation);
+
         btnStartWorkout = findViewById(R.id.btnStartWorkout);
         btnSettings = findViewById(R.id.btnSettings);
-
-
-        // טעינת הנתונים
-        loadUserData();
-
-        // יצירת האימון והתמונה
-        createDailyWorkout();
-
-
-        // ============================
-        // כפתור התחלת אימון
-        // ============================
-
-        btnStartWorkout.setOnClickListener(v -> {
-
-            Toast.makeText(
-                    HomeActivity.this,
-                    "בקרוב מתחילים את האימון!",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-        });
-
-
-        // ============================
-        // כפתור הגדרות
-        // ============================
-
-        btnSettings.setOnClickListener(v -> {
-
-            Intent intent =
-                    new Intent(
-                            HomeActivity.this,
-                            SettingsActivity.class
-                    );
-
-            startActivity(intent);
-
-        });
+        btnWorkoutHistory = findViewById(R.id.btnWorkoutHistory);
     }
 
+    private void requestNotificationPermission() {
 
-    // ==========================================
-    // כשחוזרים מההגדרות
-    // ==========================================
+        if (Build.VERSION.SDK_INT >= 33) {
+
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions(
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        100
+                );
+            }
+        }
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (auth != null) {
+        // תזמון תזכורות האימון
+        WorkoutReminderScheduler.scheduleDailyReminders(this);
 
-            loadUserData();
-            createDailyWorkout();
+        userDataLoaded = false;
+        analysisLoaded = false;
+        workoutGenerated = false;
+        currentWorkout = null;
 
-        }
+        btnStartWorkout.setEnabled(false);
+
+        txtAnalysisTitle.setText("מנתח את המשובים שלך...");
+        txtAnalysisExplanation.setText("רגע אחד, אנחנו מתאימים את האימון עבורך");
+
+        loadUserData();
+        loadFeedbackAnalysis();
     }
-
-
-    // ==========================================
-    // קבלת UID
-    // ==========================================
-
-    private String getUserId() {
-
-        FirebaseUser user =
-                auth.getCurrentUser();
-
-        if (user == null) {
-            return null;
-        }
-
-        return user.getUid();
-    }
-
-
-    // ==========================================
-    // טעינת נתוני המשתמש
-    // ==========================================
 
     private void loadUserData() {
+        FirebaseUser user = auth.getCurrentUser();
 
-        String uid = getUserId();
-
-        if (uid == null) {
+        if (user == null) {
+            Toast.makeText(this, "יש להתחבר מחדש", Toast.LENGTH_LONG).show();
+            startActivity(new Intent(HomeActivity.this, MainActivity.class));
+            finish();
             return;
         }
 
+        db.collection("users")
+                .document(user.getUid())
+                .get()
+                .addOnSuccessListener(document -> {
 
-        SharedPreferences preferences =
-                getSharedPreferences(
-                        "ReadyFitData",
-                        MODE_PRIVATE
-                );
+                    if (document.exists()) {
+                        txtAge.setText("גיל: " + getValue(document, "age", "לא הוזן"));
+                        txtWeight.setText("משקל: " + getValue(document, "weight", "לא הוזן") + " ק״ג");
 
+                        currentRunTime = getValue(document, "runTime", "10:00");
+                        currentTargetUnit = getValue(document, "targetUnit", "לא נבחר");
 
-        String age =
-                preferences.getString(
-                        uid + "_age",
-                        "--"
-                );
+                        txtRunTime.setText("תוצאת 2000 מטר: " + currentRunTime);
+                        txtTargetUnit.setText(currentTargetUnit);
 
+                        setUnitImage(currentTargetUnit);
 
-        String weight =
-                preferences.getString(
-                        uid + "_weight",
-                        "--"
-                );
+                    } else {
+                        txtAge.setText("גיל: לא הוזן");
+                        txtWeight.setText("משקל: לא הוזן");
+                        txtRunTime.setText("תוצאת 2000 מטר: לא הוזנה");
+                        txtTargetUnit.setText("לא נבחר");
+                    }
 
+                    userDataLoaded = true;
+                    updateWorkoutIfReady();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "לא הצלחנו לטעון את פרטי המשתמש", Toast.LENGTH_SHORT).show();
 
-        String runTime =
-                preferences.getString(
-                        uid + "_runTime",
-                        "--"
-                );
+                    userDataLoaded = true;
+                    updateWorkoutIfReady();
+                });
+    }
 
+    private void loadFeedbackAnalysis() {
+        WorkoutFeedbackAnalyzer.analyzeLatestFeedback(
+                new WorkoutFeedbackAnalyzer.AnalysisCallback() {
 
-        String targetUnit =
-                preferences.getString(
-                        uid + "_targetUnit",
-                        "לא נבחר"
-                );
+                    @Override
+                    public void onSuccess(String recommendation, String explanation) {
 
+                        currentRecommendation = recommendation;
 
-        txtAge.setText(
-                "גיל\n" + age
-        );
+                        txtAnalysisTitle.setText(recommendation);
+                        txtAnalysisExplanation.setText(explanation);
 
+                        analysisLoaded = true;
+                        updateWorkoutIfReady();
+                    }
 
-        txtWeight.setText(
-                "משקל\n" + weight + " ק״ג"
-        );
+                    @Override
+                    public void onFailure(String error) {
 
+                        currentRecommendation = "שמירה על הרמה";
 
-        txtRunTime.setText(
-                "2 ק״מ\n" + runTime
-        );
+                        txtAnalysisTitle.setText("שמירה על הרמה");
+                        txtAnalysisExplanation.setText(
+                                "לא הצלחנו לנתח את המשובים כרגע. האימון יישאר ברמה הנוכחית."
+                        );
 
-
-        txtTargetUnit.setText(
-                targetUnit
+                        analysisLoaded = true;
+                        updateWorkoutIfReady();
+                    }
+                }
         );
     }
 
+    private void updateWorkoutIfReady() {
 
-    // ==========================================
-    // תמונה + אימון לפי יחידת היעד
-    // ==========================================
-
-    private void createDailyWorkout() {
-
-        String uid = getUserId();
-
-        if (uid == null) {
+        if (!userDataLoaded || !analysisLoaded || workoutGenerated) {
             return;
         }
 
+        workoutGenerated = true;
 
-        SharedPreferences preferences =
-                getSharedPreferences(
-                        "ReadyFitData",
-                        MODE_PRIVATE
-                );
+        currentWorkout = WorkoutGenerator.generate(
+                currentTargetUnit,
+                currentRunTime,
+                currentRecommendation
+        );
 
-
-        String targetUnit =
-                preferences.getString(
-                        uid + "_targetUnit",
-                        ""
-                );
-
-
-        // ======================================
-        // שייטת 13
-        // ======================================
-
-        if (targetUnit.equals("שייטת 13")) {
-
-            imgUnit.setImageResource(
-                    R.drawable.shayetet
-            );
-
-
-            txtWorkoutTitle.setText(
-                    "אימון סיבולת ימית"
-            );
-
-
-            txtWorkoutDescription.setText(
-                    "ריצה • זחילות • כוח • סיבולת"
-            );
-
-
-            txtWorkoutDuration.setText(
-                    "משך משוער: 50 דקות"
-            );
-
+        if (currentWorkout == null) {
+            Toast.makeText(this, "לא הצלחנו ליצור אימון", Toast.LENGTH_LONG).show();
+            return;
         }
 
+        txtWorkoutTitle.setText(currentWorkout.getTitle());
+        txtWorkoutDescription.setText(currentWorkout.getDescription());
+        txtWorkoutDuration.setText("משך האימון: " + currentWorkout.getDuration());
 
-        // ======================================
-        // סיירת מטכ"ל
-        // ======================================
+        btnStartWorkout.setEnabled(true);
+    }
 
-        else if (targetUnit.equals("סיירת מטכ״ל")) {
+    private void startWorkout() {
 
-            imgUnit.setImageResource(
-                    R.drawable.matkal
-            );
-
-
-            txtWorkoutTitle.setText(
-                    "אימון סיבולת קרבית"
-            );
-
-
-            txtWorkoutDescription.setText(
-                    "ריצה • ספרינטים • זחילות"
-            );
-
-
-            txtWorkoutDuration.setText(
-                    "משך משוער: 45 דקות"
-            );
-
+        if (currentWorkout == null) {
+            Toast.makeText(this, "האימון עדיין נטען", Toast.LENGTH_SHORT).show();
+            return;
         }
 
+        Intent intent = new Intent(HomeActivity.this, WorkoutActivity.class);
 
-        // ======================================
-        // שלדג
-        // ======================================
+        intent.putExtra("workoutTitle", currentWorkout.getTitle());
+        intent.putExtra("workoutDescription", currentWorkout.getDescription());
+        intent.putExtra("workoutDuration", currentWorkout.getDuration());
+        intent.putExtra("workoutLevel", currentWorkout.getDifficulty());
 
-        else if (targetUnit.equals("שלדג")) {
+        ArrayList<String> exercises = new ArrayList<>(
+                currentWorkout.getExercises()
+        );
 
-            imgUnit.setImageResource(
-                    R.drawable.shaldag
-            );
+        intent.putStringArrayListExtra("workoutExercises", exercises);
 
+        startActivity(intent);
+    }
 
-            txtWorkoutTitle.setText(
-                    "אימון כוח ומהירות"
-            );
+    private String getValue(DocumentSnapshot document, String field, String defaultValue) {
 
+        Object value = document.get(field);
 
-            txtWorkoutDescription.setText(
-                    "ספרינטים • כוח • ריצה"
-            );
-
-
-            txtWorkoutDuration.setText(
-                    "משך משוער: 45 דקות"
-            );
-
+        if (value == null) {
+            return defaultValue;
         }
 
+        return String.valueOf(value);
+    }
 
-        // ======================================
-        // חטיבת הקומנדו
-        // ======================================
+    private void setUnitImage(String targetUnit) {
 
-        else if (targetUnit.equals("חטיבת הקומנדו")) {
+        if (targetUnit.contains("שייטת")) {
+            imgUnit.setImageResource(R.drawable.shayetet);
 
-            imgUnit.setImageResource(
-                    R.drawable.commando
-            );
+        } else if (targetUnit.contains("מטכ")) {
+            imgUnit.setImageResource(R.drawable.matkal);
 
+        } else if (targetUnit.contains("שלדג")) {
+            imgUnit.setImageResource(R.drawable.shaldag);
 
-            txtWorkoutTitle.setText(
-                    "אימון כושר קרבי"
-            );
-
-
-            txtWorkoutDescription.setText(
-                    "ריצה • כוח • זריזות • זחילות"
-            );
-
-
-            txtWorkoutDuration.setText(
-                    "משך משוער: 50 דקות"
-            );
-
-        }
-
-
-        // ======================================
-        // אין יחידה
-        // ======================================
-
-        else {
-
-            txtWorkoutTitle.setText(
-                    "אימון כללי"
-            );
-
-
-            txtWorkoutDescription.setText(
-                    "ריצה • כוח • סיבולת"
-            );
-
-
-            txtWorkoutDuration.setText(
-                    "משך משוער: 40 דקות"
-            );
-
+        } else if (targetUnit.contains("קומנדו")) {
+            imgUnit.setImageResource(R.drawable.commando);
         }
     }
 }

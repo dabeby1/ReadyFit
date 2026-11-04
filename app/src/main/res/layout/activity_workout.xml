@@ -1,0 +1,208 @@
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#10120F"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal"
+        android:layoutDirection="rtl">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="READYFIT"
+            android:textColor="#9DBA55"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="האימון שלך מתחיל עכשיו"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/txtWorkoutName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="אימון כושר קרבי"
+            android:textColor="#9DBA55"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginTop="28dp" />
+
+        <TextView
+            android:id="@+id/txtWorkoutLevel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="רמת האימון"
+            android:textColor="#BBBBBB"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#20251C"
+            android:padding="18dp"
+            android:layout_marginTop="22dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="משך האימון המתוכנן"
+                android:textColor="#BBBBBB"
+                android:textSize="15sp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/txtWorkoutDuration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="45 דקות"
+                android:textColor="#9DBA55"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginTop="5dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#454A40"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="זמן האימון בפועל"
+                android:textColor="#BBBBBB"
+                android:textSize="15sp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/txtStopwatch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textColor="#FFFFFF"
+                android:textSize="42sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginTop="5dp" />
+
+            <TextView
+                android:id="@+id/txtWarmup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="חימום"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:lineSpacingExtra="5dp"
+                android:layout_marginTop="18dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#20251C"
+            android:padding="22dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:id="@+id/txtExerciseProgress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="תרגיל 1 מתוך 6"
+                android:textColor="#9DBA55"
+                android:textSize="16sp"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/txtExerciseName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="שם התרגיל"
+                android:textColor="#FFFFFF"
+                android:textSize="25sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginTop="22dp" />
+
+            <TextView
+                android:id="@+id/txtExerciseTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="משך משוער: 5 דקות"
+                android:textColor="#9DBA55"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginTop="12dp" />
+
+            <TextView
+                android:id="@+id/txtExerciseDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="הוראות התרגיל יופיעו כאן"
+                android:textColor="#DDDDDD"
+                android:textSize="17sp"
+                android:gravity="center"
+                android:lineSpacingExtra="8dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="12dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtCooldown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="בסיום האימון: הליכה קלה ומתיחות עדינות"
+            android:textColor="#BBBBBB"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:lineSpacingExtra="5dp"
+            android:layout_marginTop="18dp" />
+
+        <Button
+            android:id="@+id/btnNextExercise"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="התרגיל הבא"
+            android:textColor="#10120F"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:backgroundTint="#9DBA55"
+            android:layout_marginTop="22dp" />
+
+        <Button
+            android:id="@+id/btnFinishWorkout"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="סיום אימון"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:backgroundTint="#454A40"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="25dp" />
+
+    </LinearLayout>
+</ScrollView>
